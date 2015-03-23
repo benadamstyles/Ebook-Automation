@@ -1,0 +1,4 @@
+node_modules
+*.epub
+out
+test2
