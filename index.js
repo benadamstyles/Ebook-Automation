@@ -57,7 +57,7 @@ function setUpEdit(keyStr) {
 edit.css = setUpEdit('css');
 edit.opf = setUpEdit('opf');
 
-fs.createReadStream('test2.epub')
+fs.createReadStream(metadata.file + '.epub')
 	.pipe(unzip.Parse())
 	.on('entry', function(entry) {
 		var fileName = entry.path,
