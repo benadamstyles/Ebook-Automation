@@ -6,12 +6,18 @@ var log = console.log,
 	resumer = require('resumer'),
 	c = require('chalk'),
 	_ = require("underscore"),
-	zip = require('epub-zip');
+	zip = require('epub-zip'),
+	yaml = require('js-yaml');
 
-var metadata = {
-	title: "TEST TITLE",
-	author: "TEST AUTHOR"
-};
+var metadata = yaml.load(fs.readFileSync('metadata.yml', 'utf8'));
+
+function swapNames(name) {
+	var sep = name.indexOf(','),
+		ln = name.substring(0, sep),
+		fn = name.substring(sep + 1)
+		.trim();
+	return fn + " " + ln;
+}
 
 var edit = {
 	css_Indents: function(doc) {
@@ -31,12 +37,25 @@ var edit = {
 			'<dc:creator xmlns:opf="http://www.idpf.org/2007/opf" opf:file-as="' +
 			metadata.author +
 			'" opf:role="aut">' +
-			metadata.author + '</dc:creator>');
+			swapNames(metadata.author) + '</dc:creator>');
+	},
+	opf_ISBN: function(doc) {
+		return doc;
 	}
 };
 
-edit.css = _.compose(edit.css_Indents, edit.css_Test);
-edit.opf = _.compose(edit.opf_Title, edit.opf_Author);
+function setUpEdit(keyStr) {
+	return _.compose.apply(edit, Object.keys(edit)
+		.filter(function(k) {
+			return ~k.indexOf(keyStr + '_');
+		})
+		.map(function(k) {
+			return edit[k];
+		}));
+}
+
+edit.css = setUpEdit('css');
+edit.opf = setUpEdit('opf');
 
 fs.createReadStream('test2.epub')
 	.pipe(unzip.Parse())
