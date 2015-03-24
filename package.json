@@ -1,0 +1,29 @@
+{
+  "name": "Ebook-Automation",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "bluebird": "~2.9.14",
+    "chalk": "~1.0.0",
+    "epub-zip": "~0.0.1",
+    "js-yaml": "~3.2.7",
+    "mkdirp": "~0.5.0",
+    "resumer": "~0.0.0",
+    "underscore": "~1.8.2",
+    "unzip": "~0.1.11"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Leeds-eBooks/Ebook-Automation.git"
+  },
+  "author": "Ben Styles",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/Leeds-eBooks/Ebook-Automation/issues"
+  }
+}
