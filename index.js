@@ -55,12 +55,17 @@ function insertBefore(doc, locator, str) {
 
 var edit = { // Functions are composed backwards!
   xhtml_Regexes: function(doc) {
+    var res = doc;
     if (metadata.regexes && metadata.regexes.xhtml &&
       metadata.regexes.xhtml.length) {
-      //
-    } else {
-      return doc;
+      for (var i = 0; i < metadata.regexes.xhtml.length; i++) {
+        var reg = metadata.regexes.xhtml[i],
+          regFind = new RegExp(reg.find, 'g');
+
+          res = res.replace(regFind, reg.replace);
+      }
     }
+    return res;
   },
   css_Regexes: function(doc) {
     var res = doc;
@@ -87,8 +92,10 @@ var edit = { // Functions are composed backwards!
       .replace(/113px/g, '10.4em')
       .replace(/128px/g, '11.7em')
       .replace(/142px/g, '13em')
-      .replace(/155px/g, '14.3em')
-      .replace(/170px/g, '15.6em');
+      .replace(/156px/g, '14.3em')
+      .replace(/170px/g, '15.6em')
+      .replace(/184px/g, '16.9em')
+      .replace(/198px/g, '18.2em');
 
   },
   opf_Regexes: function(doc) {
@@ -154,6 +161,8 @@ function setUpEdit(keyStr) {
 
 edit.css = setUpEdit('css');
 edit.opf = setUpEdit('opf');
+edit.xhtml = setUpEdit('xhtml');
+edit.html = setUpEdit('xhtml');
 
 fs.createReadStream(fileName)
   .pipe(unzip.Parse())
@@ -167,11 +176,7 @@ fs.createReadStream(fileName)
       run = function(entry) {
         return new Promise(function(resolve, reject) {
           var content = '';
-          if (fileEnding !== "png" &&
-            fileEnding !== "jpg" &&
-            fileEnding !== "jpeg") {
-            entry.setEncoding('utf8');
-          }
+          entry.setEncoding('utf8');
           entry.on('data', function(data) {
             content += data;
           }).on('end', function() {
@@ -184,19 +189,31 @@ fs.createReadStream(fileName)
         });
       };
 
-    run(entry).then(function(res) {
+    if (fileEnding === "png" || fileEnding === "jpg" || fileEnding === "jpeg") {
       mkd('out/' + fileDir, function(err) {
         if (!err) {
-          var w = fs.createWriteStream('out/' + filePath);
-          w.on('open', function() {
-            w.write(res);
+          entry.pipe(fs.createWriteStream('out/' + filePath)).on('close', function() {
             logS('Processed ' + filePath);
           }).on('error', logE);
         } else {
           log(err);
         }
       });
-    }).catch(log);
+    } else {
+      run(entry).then(function(res) {
+        mkd('out/' + fileDir, function(err) {
+          if (!err) {
+            var w = fs.createWriteStream('out/' + filePath);
+            w.on('open', function() {
+              w.write(res); // FIXME for pictures
+              logS('Processed ' + filePath);
+            }).on('error', logE);
+          } else {
+            log(err);
+          }
+        });
+      }).catch(log);
+    }
 
   }).on('close', function() {
     try {
