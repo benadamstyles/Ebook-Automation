@@ -73,10 +73,18 @@ var edit = { // Functions are composed backwards!
   css_Indents: function(doc) {
     return doc
       .replace(/14px/g, '1.3em')
-      .replace(/28px/g, '2.6em');
-  },
-  css_Test: function(doc) {
-    return doc.replace(/none/g, 'WORKED!');
+      .replace(/28px/g, '2.6em')
+      .replace(/43px/g,	'3.9em')
+      .replace(/57px/g,	'5.2em')
+      .replace(/71px/g,	'6.5em')
+      .replace(/85px/g,	'7.8em')
+      .replace(/99px/g,	'9.1em')
+      .replace(/113px/g, '10.4em')
+      .replace(/128px/g, '11.7em')
+      .replace(/142px/g, '13em')
+      .replace(/155px/g, '14.3em')
+      .replace(/170px/g, '15.6em');
+
   },
   opf_Regexes: function(doc) {
     if (metadata.regexes && metadata.regexes.opf &&
