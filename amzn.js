@@ -25,7 +25,7 @@ var log = console.log,
   _ = require("underscore"),
   c = require('chalk'),
   logE = _.compose(log, c.bgRed.inverse),
-  logS = _.compose(log, c.green),
+  logS = _.compose(log, c.yellow),
   fs = require('fs'),
   mkd = require('mkdirp'),
   unzip = require('unzip'),
@@ -55,12 +55,12 @@ function edit(doc) {
   return insertAfter(doc, '</spine>',
     '\n' +
     '\t<guide>\n' +
-    '\t\t<reference href="Text/' + metadata.toc_file + '.xhtml#' + metadata
+    '\t\t<reference href="Text/' + metadata.toc_file + '#' + metadata
     .toc_id +
     '" title="Table of Contents" type="toc" />\n' +
     '\t\t<reference href="Images/cover.jpg" type="cover" />\n' +
     '\t\t<reference href="Text/' + metadata.start_reading_file +
-    '.xhtml#full-title" title="Start Reading" type="text" />\n' +
+    '#full-title" title="Start Reading" type="text" />\n' +
     '\t</guide>'
   );
 }
@@ -77,11 +77,7 @@ fs.createReadStream(fileName)
       run = function(entry) {
         return new Promise(function(resolve, reject) {
           var content = '';
-          if (fileEnding !== "png" &&
-            fileEnding !== "jpg" &&
-            fileEnding !== "jpeg") {
-            entry.setEncoding('utf8');
-          }
+          entry.setEncoding('utf8');
           entry.on('data', function(data) {
               content += data;
             })
@@ -94,19 +90,31 @@ fs.createReadStream(fileName)
         });
       };
 
-    run(entry).then(function(res) {
+    if (fileEnding === "png" || fileEnding === "jpg" || fileEnding === "jpeg") {
       mkd('amzn/' + fileDir, function(err) {
         if (!err) {
-          var w = fs.createWriteStream('amzn/' + filePath);
-          w.on('open', function() {
-            w.write(res);
+          entry.pipe(fs.createWriteStream('amzn/' + filePath)).on('close', function() {
             logS('Processed ' + filePath);
           }).on('error', logE);
         } else {
           log(err);
         }
       });
-    }).catch(log);
+    } else {
+      run(entry).then(function(res) {
+        mkd('amzn/' + fileDir, function(err) {
+          if (!err) {
+            var w = fs.createWriteStream('amzn/' + filePath);
+            w.on('open', function() {
+              w.write(res);
+              logS('Processed ' + filePath);
+            }).on('error', logE);
+          } else {
+            log(err);
+          }
+        });
+      }).catch(log);
+    }
 
   })
   .on('close', function() {
