@@ -71,8 +71,9 @@ fs.createReadStream(fileName)
 
     var filePath = entry.path,
       fileEnding = filePath.substring(filePath.lastIndexOf('.') + 1),
+      folderSep = ~filePath.indexOf('/') ? '/' : '\\',
       fileDir = filePath.substr(0, filePath.length - fileEnding.length)
-      .substring(0, filePath.lastIndexOf('\\') + 1), // FIXME
+      .substring(0, filePath.lastIndexOf(folderSep) + 1),
       run = function(entry) {
         return new Promise(function(resolve, reject) {
           var content = '';
