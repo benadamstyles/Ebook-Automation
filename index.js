@@ -63,12 +63,17 @@ var edit = { // Functions are composed backwards!
     }
   },
   css_Regexes: function(doc) {
+    var res = doc;
     if (metadata.regexes && metadata.regexes.css &&
       metadata.regexes.css.length) {
-      //
-    } else {
-      return doc;
+      for (var i = 0; i < metadata.regexes.css.length; i++) {
+        var reg = metadata.regexes.css[i],
+          regFind = new RegExp(reg.find, 'g');
+
+          res = res.replace(regFind, reg.replace);
+      }
     }
+    return res;
   },
   css_Indents: function(doc) {
     return doc
