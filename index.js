@@ -1,3 +1,9 @@
+if (!String.prototype.includes) {
+  String.prototype.includes = function() {'use strict';
+    return String.prototype.indexOf.apply(this, arguments) !== -1;
+  };
+}
+
 var log = console.log,
   _ = require("underscore"),
   c = require('chalk'),
@@ -11,6 +17,7 @@ var log = console.log,
   zip = require('epub-zip'),
   yaml = require('js-yaml'),
   Papa = require('babyparse'),
+  // rf = require('rimraf'),
   glob = require('glob');
 
 // var metadata = yaml.load(fs.readFileSync('metadata.yml', 'utf8'));
@@ -61,6 +68,7 @@ var edit = { // Functions are composed backwards!
       for (var i = 0; i < metadata.regexes.xhtml.length; i++) {
         var reg = metadata.regexes.xhtml[i],
           regFind = new RegExp(reg.find, 'g');
+          log(regFind);
 
           res = res.replace(regFind, reg.replace);
       }
@@ -74,11 +82,18 @@ var edit = { // Functions are composed backwards!
       for (var i = 0; i < metadata.regexes.css.length; i++) {
         var reg = metadata.regexes.css[i],
           regFind = new RegExp(reg.find, 'g');
+          log(regFind);
 
           res = res.replace(regFind, reg.replace);
       }
     }
     return res;
+  },
+  css_amzn_isbn: function(doc) {
+    return doc +
+      '@media amzn-mobi, amzn-kf8 {\n' +
+      '\t.isbn {display: none;}\n' +
+      '}';
   },
   css_Indents: function(doc) {
     return doc
@@ -106,12 +121,6 @@ var edit = { // Functions are composed backwards!
       return doc;
     }
   },
-  opf_Title: function(doc) {
-    return doc.replace("<dc:title></dc:title>",
-      "<dc:title>" + metadata.Title +
-      (metadata.Subtitle ? (': ' + metadata.Subtitle) : '') +
-      "</dc:title>");
-  },
   opf_OtherContribs: function(doc) {
     var abbrevTypes = ['edt', 'ill', 'trl'],
       rawTypes = ['Editor', 'Illustrator', 'Translator'],
@@ -121,7 +130,7 @@ var edit = { // Functions are composed backwards!
       res = doc;
     for (var i = 0; i < verboseTypes.length; i++) {
       if (metadata[verboseTypes[i]]) {
-        res = insertAfter(res, '</dc:title>',
+        res = insertAfter(res, '<metadata>',
           '\n\t\t<dc:contributor xmlns:opf="http://www.idpf.org/2007/opf" opf:file-as="' +
           swapNames(metadata[verboseTypes[i]]) + '" opf:role="' +
           abbrevTypes[i] + '">' +
@@ -133,20 +142,48 @@ var edit = { // Functions are composed backwards!
     return res;
   },
   opf_Author: function(doc) {
-    return doc.replace("<dc:creator></dc:creator>",
-      '<dc:creator xmlns:opf="http://www.idpf.org/2007/opf" opf:file-as="' +
-      swapNames(metadata['Author (First, Last)']) +
-      '" opf:role="aut">' +
-      metadata['Author (First, Last)'] + '</dc:creator>');
+    var newAuthor = '<dc:creator xmlns:opf="http://www.idpf.org/2007/opf" opf:file-as="' +
+    swapNames(metadata['Author (First, Last)']) +
+    '" opf:role="aut">' +
+    metadata['Author (First, Last)'] + '</dc:creator>';
+
+    if (doc.includes('<dc:creator />')) {
+      return doc.replace('<dc:creator />', newAuthor);
+    } else if (doc.includes("<dc:creator></dc:creator>")) {
+      return doc.replace("<dc:creator></dc:creator>", newAuthor);
+    } else if (!doc.includes('<dc:creator>')) {
+      return insertAfter(doc, '<metadata>', '\n\t\t' + newAuthor);
+    } else {
+      return doc;
+    }
   },
   opf_ISBN: function(doc) {
+    var newISBN = '<dc:identifier xmlns:opf="http://www.idpf.org/2007/opf" opf:scheme="ISBN">' +
+      metadata['eBook ISBN'] +
+      '</dc:identifier>';
     if (!metadata['eBook ISBN']) {
       return doc;
     }
-    return insertAfter(doc, '</dc:title>',
-      '\n\t\t<dc:identifier xmlns:opf="http://www.idpf.org/2007/opf" opf:scheme="ISBN">' +
-      metadata['eBook ISBN'] +
-      '</dc:identifier>');
+    if (!doc.includes(newISBN)) {
+      return insertAfter(doc, '<metadata>', '\n\t\t' + newISBN);
+    } else {
+      return doc;
+    }
+  },
+  opf_Title: function(doc) {
+    var newTitle = "<dc:title>" + metadata.Title +
+      (metadata.Subtitle ? (': ' + metadata.Subtitle) : '') +
+      "</dc:title>";
+
+    if (doc.includes('<dc:title />')) {
+      return doc.replace('<dc:title />', newTitle);
+    } else if (doc.includes("<dc:title></dc:title>")) {
+      return doc.replace("<dc:title></dc:title>", newTitle);
+    } else if (!doc.includes('<dc:title>')) {
+      return insertAfter(doc, '<metadata>', '\n\t\t' + newTitle);
+    } else {
+      return doc;
+    }
   }
 };
 
@@ -193,7 +230,7 @@ fs.createReadStream(fileName)
       mkd('out/' + fileDir, function(err) {
         if (!err) {
           entry.pipe(fs.createWriteStream('out/' + filePath)).on('close', function() {
-            logS('Processed ' + filePath);
+            log(c.yellow('Not processed: ' + filePath));
           }).on('error', logE);
         } else {
           log(err);
@@ -205,7 +242,7 @@ fs.createReadStream(fileName)
           if (!err) {
             var w = fs.createWriteStream('out/' + filePath);
             w.on('open', function() {
-              w.write(res); // FIXME for pictures
+              w.write(res);
               logS('Processed ' + filePath);
             }).on('error', logE);
           } else {
@@ -214,13 +251,20 @@ fs.createReadStream(fileName)
         });
       }).catch(log);
     }
-
-  }).on('close', function() {
-    try {
-      var epub = zip("./out");
-      fs.renameSync(fileName, 'old-' + fileName);
-      fs.writeFileSync(fileName, epub);
-    } catch (e) {
-      logE(e);
-    }
   });
+
+process.on('exit', function() {
+  try {
+    var epub = zip("./out");
+    fs.renameSync(fileName, 'old-' + fileName);
+    fs.writeFileSync(fileName, epub);
+    // if (process.argv[2]!=='-debug') {
+    //   rf.sync("./out/META-INF", logE);
+    //   rf.sync("./out/OEBPS", logE);
+    //   rf.sync("./out", logE);
+    // }
+    logS('::: Completed in '+process.uptime()+' seconds! :::');
+  } catch (e) {
+    logE(e);
+  }
+});
