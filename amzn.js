@@ -68,7 +68,6 @@ function edit(doc) {
 fs.createReadStream(fileName)
   .pipe(unzip.Parse())
   .on('entry', function(entry) {
-
     var filePath = entry.path,
       fileEnding = filePath.substring(filePath.lastIndexOf('.') + 1),
       folderSep = ~filePath.indexOf('/') ? '/' : '\\',
@@ -115,13 +114,13 @@ fs.createReadStream(fileName)
         });
       }).catch(log);
     }
+  });
 
-  })
-  .on('close', function() {
-    try {
-      var epub = zip("./amzn");
-      fs.writeFileSync(insertBefore(fileName, '.epub', '-amzn'), epub);
-    } catch (e) {
-      logE(e);
-    }
-  }).on('error', logE);
+process.on('exit', function() {
+  try {
+    var epub = zip("./amzn");
+    fs.writeFileSync(insertBefore(fileName, '.epub', '-amzn'), epub);
+  } catch (e) {
+    logE(e);
+  }
+});
