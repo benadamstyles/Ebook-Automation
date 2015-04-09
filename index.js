@@ -130,12 +130,12 @@ var edit = { // Functions are composed backwards!
       res = doc;
     for (var i = 0; i < verboseTypes.length; i++) {
       if (metadata[verboseTypes[i]]) {
-        res = insertAfter(res, '<metadata>',
-          '\n\t\t<dc:contributor xmlns:opf="http://www.idpf.org/2007/opf" opf:file-as="' +
+        res = insertBefore(res, '</metadata>',
+          '\t<dc:contributor xmlns:opf="http://www.idpf.org/2007/opf" opf:file-as="' +
           swapNames(metadata[verboseTypes[i]]) + '" opf:role="' +
           abbrevTypes[i] + '">' +
           metadata[verboseTypes[i]] +
-          '</dc:contributor>'
+          '</dc:contributor>' + '\n\t'
         );
       }
     }
@@ -152,7 +152,7 @@ var edit = { // Functions are composed backwards!
     } else if (doc.includes("<dc:creator></dc:creator>")) {
       return doc.replace("<dc:creator></dc:creator>", newAuthor);
     } else if (!doc.includes('<dc:creator>')) {
-      return insertAfter(doc, '<metadata>', '\n\t\t' + newAuthor);
+      return insertBefore(doc, '</metadata>', '\t' + newAuthor + '\n\t');
     } else {
       return doc;
     }
@@ -165,7 +165,7 @@ var edit = { // Functions are composed backwards!
       return doc;
     }
     if (!doc.includes(newISBN)) {
-      return insertAfter(doc, '<metadata>', '\n\t\t' + newISBN);
+      return insertBefore(doc, '</metadata>', '\t' + newISBN + '\n\t');
     } else {
       return doc;
     }
@@ -180,7 +180,7 @@ var edit = { // Functions are composed backwards!
     } else if (doc.includes("<dc:title></dc:title>")) {
       return doc.replace("<dc:title></dc:title>", newTitle);
     } else if (!doc.includes('<dc:title>')) {
-      return insertAfter(doc, '<metadata>', '\n\t\t' + newTitle);
+      return insertBefore(doc, '</metadata>', '\t' + newTitle + '\n\t');
     } else {
       return doc;
     }
