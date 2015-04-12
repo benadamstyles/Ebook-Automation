@@ -122,8 +122,8 @@ process.on('exit', function() {
     var epub = zip("./amzn"),
         newFileName = insertBefore(fileName, '.epub', '-amzn');
     fs.writeFileSync(newFileName, epub);
-    exec('./kindlegen ' + newFileName);
-    logS('Mobi file built!\n\n::: Completed in '+process.uptime()+' seconds! :::');
+    log(exec('./kindlegen ' + newFileName));
+    logS('::: Completed in '+process.uptime()+' seconds! :::');
   } catch (e) {
     logE(e);
   }
