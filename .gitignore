@@ -1,5 +1,6 @@
 node_modules
 *.epub
+*.mobi
 out
 test2
 metadata.yml
