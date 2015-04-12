@@ -34,7 +34,8 @@ var log = console.log,
   zip = require('epub-zip'),
   yaml = require('js-yaml'),
   Papa = require('babyparse'),
-  glob = require('glob');
+  glob = require('glob'),
+  exec = require('execsyncs');
 
 var metadata = yaml.load(fs.readFileSync('metadata.yml', 'utf8'));
 var fileName = glob.sync('*.epub').find(function(name) {
@@ -118,8 +119,11 @@ fs.createReadStream(fileName)
 
 process.on('exit', function() {
   try {
-    var epub = zip("./amzn");
-    fs.writeFileSync(insertBefore(fileName, '.epub', '-amzn'), epub);
+    var epub = zip("./amzn"),
+        newFileName = insertBefore(fileName, '.epub', '-amzn');
+    fs.writeFileSync(newFileName, epub);
+    exec('./kindlegen ' + newFileName);
+    logS('Mobi file built!\n\n::: Completed in '+process.uptime()+' seconds! :::');
   } catch (e) {
     logE(e);
   }

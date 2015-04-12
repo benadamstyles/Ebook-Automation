@@ -8,6 +8,7 @@
     "bluebird": "~2.9.14",
     "chalk": "~1.0.0",
     "epub-zip": "~0.0.1",
+    "execsyncs": "^0.1.1",
     "glob": "~5.0.3",
     "js-yaml": "~3.2.7",
     "mkdirp": "~0.5.0",
