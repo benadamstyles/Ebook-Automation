@@ -1,0 +1,20 @@
+toc_file: Section0004.html
+toc_id: Contents
+start_reading_file: Section0002.html
+
+regexes:
+  - css:
+    - find: '\n\t-epub-ruby-position:over;\n\tcolor:#000000;'
+      replace: ''
+    - find: '\n\tcolor : #000000;'
+      replace: ''
+    - find: '\n\tfont-family : "Minion Pro", serif;'
+      replace: ''
+    # Poetry
+    - find: 'text-indent : -1.3em;\s+margin : 0px 0px 0px 1.3em;\s+}'
+      replace: "text-indent : -1.3em;\n\tmargin : 0px 0px 0px 1.3em;\n}\n@media amzn-mobi {\n\tp.poem {\n\t\tmargin: 0;\n\t}\n}"
+  - opf:
+  - xhtml:
+    # Arc
+    - find: '<p class="colophon">(?=(\d|\s)+\(e)'
+      replace: '<p class="colophon isbn">'

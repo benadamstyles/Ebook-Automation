@@ -3,6 +3,5 @@ node_modules
 *.mobi
 out
 test2
-metadata.yml
 *.csv
 amzn
