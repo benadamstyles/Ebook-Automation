@@ -75,6 +75,12 @@ var edit = { // Functions are composed backwards!
     }
     return res;
   },
+  xhtml_smallCaps: function(doc) {
+    return doc.replace(/(?:<span class=("|')small-caps\1>)([^<]+)(?:<\/span>)/g,
+    function(match, g1, g2, offset, str) {
+      return match.replace(g2, g2.toUpperCase());
+    });
+  },
   css_Regexes: function(doc) {
     var res = doc;
     if (metadata.regexes && metadata.regexes.css &&
