@@ -1,6 +1,7 @@
-toc_file: Section0004.html
-toc_id: Contents
-start_reading_file: Section0002.html
+toc_file: Section0092.xhtml
+toc_id: CONTENTS
+start_reading_file: Section0093.xhtml
+start_reading_id: FOREWORD
 
 regexes:
   - css:

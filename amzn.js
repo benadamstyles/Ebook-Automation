@@ -40,11 +40,14 @@ var log = console.log,
 var nodeArgs = process.argv.slice(2);
 
 var metadata = yaml.load(fs.readFileSync('metadata.yml', 'utf8'));
-var fileName = nodeArgs.length ?
-  nodeArgs[0] :
-  glob.sync('*.epub').find(function(name) {
-    return name.substr(0, 4) !== 'old-';
-  });
+var srcFilePath = nodeArgs.length ?
+      nodeArgs[0] :
+      glob.sync('*.epub').find(function(name) {
+        return name.substr(0, 4) !== 'old-';
+      }),
+    srcFileName = nodeArgs.length ?
+      srcFilePath.substr(srcFilePath.lastIndexOf('/') + 1) :
+      srcFilePath;
 
 function insertAfter(doc, locator, str) {
   var i = doc.indexOf(locator) + locator.length;
@@ -65,12 +68,13 @@ function edit(doc) {
     '" title="Table of Contents" type="toc" />\n' +
     '\t\t<reference href="Images/cover.jpg" type="cover" />\n' +
     '\t\t<reference href="Text/' + metadata.start_reading_file +
-    '#full-title" title="Start Reading" type="text" />\n' +
+    '#' + (metadata.start_reading_id || 'full-title') +
+    '" title="Start Reading" type="text" />\n' +
     '\t</guide>'
   );
 }
 
-fs.createReadStream(fileName)
+fs.createReadStream(srcFilePath)
   .pipe(unzip.Parse())
   .on('entry', function(entry) {
     var filePath = entry.path,
@@ -124,7 +128,7 @@ fs.createReadStream(fileName)
 process.on('exit', function() {
   try {
     var epub = zip("./amzn"),
-        newFileName = insertBefore(fileName, '.epub', '-amzn');
+        newFileName = insertBefore(srcFileName, '.epub', '-amzn');
     fs.writeFileSync(newFileName, epub);
     log(exec('./kindlegen ' + newFileName));
     logS('::: Completed in '+process.uptime()+' seconds! :::');

@@ -24,7 +24,10 @@ var nodeArgs = process.argv.slice(2);
 
 var csv = glob.sync('*.csv')[0],
     manualData = yaml.load(fs.readFileSync('metadata.yml', 'utf8')),
-    fileName = nodeArgs.length ? nodeArgs[0] : glob.sync('*.epub')[0];
+    srcFilePath = nodeArgs.length ? nodeArgs[0] : glob.sync('*.epub')[0],
+    srcFileName = nodeArgs.length ?
+      srcFilePath.substr(srcFilePath.lastIndexOf('/') + 1) :
+      srcFilePath;
 
 var metadata = csv ?
   _.extendOwn(
@@ -208,7 +211,7 @@ edit.opf = setUpEdit('opf');
 edit.xhtml = setUpEdit('xhtml');
 edit.html = setUpEdit('xhtml');
 
-fs.createReadStream(fileName)
+fs.createReadStream(srcFilePath)
   .pipe(unzip.Parse())
   .on('entry', function(entry) {
 
@@ -263,9 +266,11 @@ fs.createReadStream(fileName)
 process.on('exit', function() {
   try {
     var epub = zip("./out");
-    fs.renameSync(fileName, 'old-' + fileName);
-    fs.writeFileSync(fileName, epub);
-    // if (process.argv[2]!=='-debug') {
+    try {
+      fs.renameSync(srcFileName, 'old-' + srcFileName);
+    } catch(e) {logE(e);}
+    fs.writeFileSync(srcFileName, epub);
+    // if (nodeArgs[0] !== '-debug') {
     //   rf.sync("./out/META-INF", logE);
     //   rf.sync("./out/OEBPS", logE);
     //   rf.sync("./out", logE);
