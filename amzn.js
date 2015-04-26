@@ -37,10 +37,14 @@ var log = console.log,
   glob = require('glob'),
   exec = require('execsyncs');
 
+var nodeArgs = process.argv.slice(2);
+
 var metadata = yaml.load(fs.readFileSync('metadata.yml', 'utf8'));
-var fileName = glob.sync('*.epub').find(function(name) {
-  return name.substr(0, 4) !== 'old-';
-});
+var fileName = nodeArgs.length ?
+  nodeArgs[0] :
+  glob.sync('*.epub').find(function(name) {
+    return name.substr(0, 4) !== 'old-';
+  });
 
 function insertAfter(doc, locator, str) {
   var i = doc.indexOf(locator) + locator.length;

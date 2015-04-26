@@ -20,20 +20,20 @@ var log = console.log,
   // rf = require('rimraf'),
   glob = require('glob');
 
-// var metadata = yaml.load(fs.readFileSync('metadata.yml', 'utf8'));
+var nodeArgs = process.argv.slice(2);
+
 var csv = glob.sync('*.csv')[0],
-  manualData = yaml.load(fs.readFileSync('metadata.yml', 'utf8')),
-  fileName = glob.sync('*.epub')[0];
+    manualData = yaml.load(fs.readFileSync('metadata.yml', 'utf8')),
+    fileName = nodeArgs.length ? nodeArgs[0] : glob.sync('*.epub')[0];
 
 var metadata = csv ?
-  _.extendOwn(Papa.parse(fs.readFileSync(csv, 'utf8'), {
-    header: true
-  }).data[0], manualData) :
+  _.extendOwn(
+    Papa.parse(fs.readFileSync(csv, 'utf8'), {
+      header: true
+    }).data[0],
+    manualData
+  ) :
   manualData;
-
-// metadata.file = metadata.file.substr(-5) === '.epub' ?
-// 	metadata.file.replace('.epub', '') :
-// 	metadata.file;
 
 function swapNames(name) {
   var comma = name.indexOf(','),
