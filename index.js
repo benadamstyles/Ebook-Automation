@@ -5,7 +5,7 @@ if (!String.prototype.includes) {
 }
 
 var log = console.log,
-  _ = require("underscore"),
+  _ = require("underscore-contrib"),
   c = require('chalk'),
   logE = _.compose(log, c.bgRed.inverse),
   logS = _.compose(log, c.green),
@@ -60,7 +60,13 @@ function insertBefore(doc, locator, str) {
   return doc.substr(0, i) + str + doc.substr(i, doc.length);
 }
 
-var edit = { // Functions are composed backwards!
+var edit = {
+  xhtml_smallCaps: function(doc) {
+    return doc.replace(/(?:<span class=("|')small-caps\1>)([^<]+)(?:<\/span>)/g,
+    function(match, g1, g2, offset, str) {
+      return match.replace(g2, g2.toUpperCase());
+    });
+  },
   xhtml_Regexes: function(doc) {
     var res = doc;
     if (metadata.regexes && metadata.regexes.xhtml &&
@@ -74,32 +80,6 @@ var edit = { // Functions are composed backwards!
       }
     }
     return res;
-  },
-  xhtml_smallCaps: function(doc) {
-    return doc.replace(/(?:<span class=("|')small-caps\1>)([^<]+)(?:<\/span>)/g,
-    function(match, g1, g2, offset, str) {
-      return match.replace(g2, g2.toUpperCase());
-    });
-  },
-  css_Regexes: function(doc) {
-    var res = doc;
-    if (metadata.regexes && metadata.regexes.css &&
-      metadata.regexes.css.length) {
-      for (var i = 0; i < metadata.regexes.css.length; i++) {
-        var reg = metadata.regexes.css[i],
-          regFind = new RegExp(reg.find, 'g');
-          log(regFind);
-
-          res = res.replace(regFind, reg.replace);
-      }
-    }
-    return res;
-  },
-  css_amzn_isbn: function(doc) {
-    return doc +
-      '@media amzn-mobi, amzn-kf8 {\n' +
-      '\t.isbn {display: none;}\n' +
-      '}';
   },
   css_Indents: function(doc) {
     return doc
@@ -119,10 +99,66 @@ var edit = { // Functions are composed backwards!
       .replace(/198px/g, '18.2em');
 
   },
-  opf_Regexes: function(doc) {
-    if (metadata.regexes && metadata.regexes.opf &&
-      metadata.regexes.opf.length) {
-      //
+  css_amzn_isbn: function(doc) {
+    return doc +
+      '@media amzn-mobi, amzn-kf8 {\n' +
+      '\t.isbn {display: none;}\n' +
+      '}';
+  },
+  css_Regexes: function(doc) {
+    var res = doc;
+    if (metadata.regexes && metadata.regexes.css &&
+      metadata.regexes.css.length) {
+      for (var i = 0; i < metadata.regexes.css.length; i++) {
+        var reg = metadata.regexes.css[i],
+          regFind = new RegExp(reg.find, 'g');
+          log(regFind);
+
+          res = res.replace(regFind, reg.replace);
+      }
+    }
+    return res;
+  },
+  opf_Title: function(doc) {
+    var newTitle = "<dc:title>" + metadata.Title +
+      (metadata.Subtitle ? (': ' + metadata.Subtitle) : '') +
+      "</dc:title>";
+
+    if (doc.includes('<dc:title />')) {
+      return doc.replace('<dc:title />', newTitle);
+    } else if (doc.includes("<dc:title></dc:title>")) {
+      return doc.replace("<dc:title></dc:title>", newTitle);
+    } else if (!doc.includes('<dc:title>')) {
+      return insertBefore(doc, '</metadata>', '\t' + newTitle + '\n\t');
+    } else {
+      return doc;
+    }
+  },
+  opf_ISBN: function(doc) {
+    var newISBN = '<dc:identifier xmlns:opf="http://www.idpf.org/2007/opf" opf:scheme="ISBN">' +
+      metadata['eBook ISBN'] +
+      '</dc:identifier>';
+    if (!metadata['eBook ISBN']) {
+      return doc;
+    }
+    if (!doc.includes(newISBN)) {
+      return insertBefore(doc, '</metadata>', '\t' + newISBN + '\n\t');
+    } else {
+      return doc;
+    }
+  },
+  opf_Author: function(doc) {
+    var newAuthor = '<dc:creator xmlns:opf="http://www.idpf.org/2007/opf" opf:file-as="' +
+    swapNames(metadata['Author (First, Last)']) +
+    '" opf:role="aut">' +
+    metadata['Author (First, Last)'] + '</dc:creator>';
+
+    if (doc.includes('<dc:creator />')) {
+      return doc.replace('<dc:creator />', newAuthor);
+    } else if (doc.includes("<dc:creator></dc:creator>")) {
+      return doc.replace("<dc:creator></dc:creator>", newAuthor);
+    } else if (!doc.includes('<dc:creator>')) {
+      return insertBefore(doc, '</metadata>', '\t' + newAuthor + '\n\t');
     } else {
       return doc;
     }
@@ -147,46 +183,10 @@ var edit = { // Functions are composed backwards!
     }
     return res;
   },
-  opf_Author: function(doc) {
-    var newAuthor = '<dc:creator xmlns:opf="http://www.idpf.org/2007/opf" opf:file-as="' +
-    swapNames(metadata['Author (First, Last)']) +
-    '" opf:role="aut">' +
-    metadata['Author (First, Last)'] + '</dc:creator>';
-
-    if (doc.includes('<dc:creator />')) {
-      return doc.replace('<dc:creator />', newAuthor);
-    } else if (doc.includes("<dc:creator></dc:creator>")) {
-      return doc.replace("<dc:creator></dc:creator>", newAuthor);
-    } else if (!doc.includes('<dc:creator>')) {
-      return insertBefore(doc, '</metadata>', '\t' + newAuthor + '\n\t');
-    } else {
-      return doc;
-    }
-  },
-  opf_ISBN: function(doc) {
-    var newISBN = '<dc:identifier xmlns:opf="http://www.idpf.org/2007/opf" opf:scheme="ISBN">' +
-      metadata['eBook ISBN'] +
-      '</dc:identifier>';
-    if (!metadata['eBook ISBN']) {
-      return doc;
-    }
-    if (!doc.includes(newISBN)) {
-      return insertBefore(doc, '</metadata>', '\t' + newISBN + '\n\t');
-    } else {
-      return doc;
-    }
-  },
-  opf_Title: function(doc) {
-    var newTitle = "<dc:title>" + metadata.Title +
-      (metadata.Subtitle ? (': ' + metadata.Subtitle) : '') +
-      "</dc:title>";
-
-    if (doc.includes('<dc:title />')) {
-      return doc.replace('<dc:title />', newTitle);
-    } else if (doc.includes("<dc:title></dc:title>")) {
-      return doc.replace("<dc:title></dc:title>", newTitle);
-    } else if (!doc.includes('<dc:title>')) {
-      return insertBefore(doc, '</metadata>', '\t' + newTitle + '\n\t');
+  opf_Regexes: function(doc) {
+    if (metadata.regexes && metadata.regexes.opf &&
+      metadata.regexes.opf.length) {
+      //
     } else {
       return doc;
     }
@@ -194,12 +194,13 @@ var edit = { // Functions are composed backwards!
 };
 
 function setUpEdit(keyStr) {
-  return _.compose.apply(edit, Object.keys(edit)
-    .filter(function(k) {
-      return ~k.indexOf(keyStr + '_');
-    }).map(function(k) {
-      return edit[k];
-    }));
+  return _.pipeline(
+    _.chain(edit)
+      .pick(function(v, k, o) {
+        return _.strContains(k, keyStr + '_');
+      })
+      .values().value()
+  );
 }
 
 edit.css = setUpEdit('css');
