@@ -1,0 +1,9 @@
+{
+  "sub": true,
+  "undef": true,
+  "node": true,
+  "devel": true,
+  "nonstandard": true,
+  "globals": {
+  }
+}
