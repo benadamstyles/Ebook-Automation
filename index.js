@@ -15,7 +15,8 @@ var log = console.log,
   Promise = Promise || require('bluebird'),
   resumer = require('resumer'),
   zip = require('epub-zip'),
-  yaml = require('js-yaml'),
+  // yaml = require('js-yaml'),
+  cson = require('cson-parser'),
   Papa = require('babyparse'),
   // rf = require('rimraf'),
   glob = require('glob');
@@ -23,7 +24,8 @@ var log = console.log,
 var nodeArgs = process.argv.slice(2);
 
 var csv = glob.sync('*.csv')[0],
-    manualData = yaml.load(fs.readFileSync('metadata.yml', 'utf8')),
+    // manualData = yaml.load(fs.readFileSync('metadata.yml', 'utf8')),
+    manualData = cson.parse(fs.readFileSync('metadata.cson', 'utf8')),
     srcFilePath = nodeArgs.length ? nodeArgs[0] : glob.sync('*.epub')[0],
     srcFileName = nodeArgs.length ?
       srcFilePath.substr(srcFilePath.lastIndexOf('/') + 1) :

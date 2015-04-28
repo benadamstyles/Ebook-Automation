@@ -32,14 +32,16 @@ var log = console.log,
   Promise = Promise || require('bluebird'),
   resumer = require('resumer'),
   zip = require('epub-zip'),
-  yaml = require('js-yaml'),
+  // yaml = require('js-yaml'),
+  cson = require('cson-parser'),
   Papa = require('babyparse'),
   glob = require('glob'),
   exec = require('execsyncs');
 
 var nodeArgs = process.argv.slice(2);
 
-var metadata = yaml.load(fs.readFileSync('metadata.yml', 'utf8'));
+// var metadata = yaml.load(fs.readFileSync('metadata.yml', 'utf8'));
+var metadata = cson.parse(fs.readFileSync('metadata.cson', 'utf8'));
 var srcFilePath = nodeArgs.length ?
       nodeArgs[0] :
       glob.sync('*.epub').find(function(name) {

@@ -1,14 +1,14 @@
 toc_file: Section0092.xhtml
-toc_id: CONTENTS
+toc_id: Contents
 start_reading_file: Section0093.xhtml
-start_reading_id: FOREWORD
+start_reading_id: full-title
 
 regexes:
   - css:
-    - find: '\n\t-epub-ruby-position:over;\n\tcolor:#000000;'
+    - find: "\n\t-epub-ruby-position:over;\n\tcolor:#000000;"
       replace: ''
-    - find: '\n\tcolor : #000000;'
-      replace: ''
+    # - find: '\n\tcolor : #000000;'
+    #   replace: ''
     - find: '\n\tfont-family : "Minion Pro", serif;'
       replace: ''
     # Poetry
@@ -17,5 +17,5 @@ regexes:
   - opf:
   - xhtml:
     # Arc
-    - find: '<p class="colophon">(?=(\d|\s)+\(e)'
-      replace: '<p class="colophon isbn">'
+    # - find: '<p class="colophon">(?=(\d|\s)+\(e)'
+    #   replace: '<p class="colophon isbn">'

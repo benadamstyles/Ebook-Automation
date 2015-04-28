@@ -1,0 +1,43 @@
+toc_file: 'NSB-1.xhtml'
+toc_id: 'Contents'
+start_reading_file: 'Section0002.xhtml'
+start_reading_id: 'full-title'
+
+regexes:
+  css: [
+    {
+      find: '''
+        -epub-ruby-position:over;
+        \s+color:#000000;
+        '''
+      replace: ''
+    }
+    # {
+    #   find: '\n\tcolor : #000000;'
+    #   replace: ''
+    # }
+    {
+      find: 'font-family : "Minion Pro", serif;'
+      replace: ''
+    }
+    {
+    # Poetry
+      find: 'text-indent : -1.3em;\s+margin : 0px 0px 0px 1.3em;\s+}'
+      replace: '''
+        text-indent : -1.3em;
+        \tmargin : 0px 0px 0px 1.3em;
+        }
+        @media amzn-mobi {
+        \tp.poem {
+        \t\tmargin: 0;
+        \t}
+        }
+        '''
+    }
+  ]
+  opf: []
+  xhtml: [
+    # Arc
+    # - find: '<p class="colophon">(?=(\d|\s)+\(e)'
+    #   replace: '<p class="colophon isbn">'
+  ]
