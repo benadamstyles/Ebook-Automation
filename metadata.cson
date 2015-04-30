@@ -6,38 +6,46 @@ start_reading_id: 'full-title'
 regexes:
   css: [
     {
-      find: '''
-        -epub-ruby-position:over;
-        \s+color:#000000;
-        '''
-      replace: ''
-    }
-    # {
-    #   find: '\n\tcolor : #000000;'
-    #   replace: ''
-    # }
-    {
-      find: 'font-family : "Minion Pro", serif;'
+      find: '\\s*-epub-ruby-position:over;\\n\\s*color:#000000;\\n'
       replace: ''
     }
     {
-    # Poetry
-      find: 'text-indent : -1.3em;\s+margin : 0px 0px 0px 1.3em;\s+}'
+      find: '\\s*color\\s*: #000000;'
+      replace: ''
+    }
+    {
+      find: 'font-family\\s*:\\s*"Minion Pro", serif;'
+      replace: ''
+    }
+    {
+      find: 'text-indent\\s*: -1.3em;\\s*margin\\s*: 0px 0px 0px 1.3em;\\s*}'
       replace: '''
         text-indent : -1.3em;
-        \tmargin : 0px 0px 0px 1.3em;
+        \\tmargin : 0px 0px 0px 1.3em;
         }
         @media amzn-mobi {
-        \tp.poem {
-        \t\tmargin: 0;
-        \t}
+        \\tp.poem {
+        \\t\\tmargin: 0;
+        \\t}
         }
         '''
     }
   ]
   opf: []
   xhtml: [
+    {
+      find: ' \\. \\. \\.'
+      replace: '&nbsp;.&nbsp;.&nbsp;.'
+    }
+    {
+      find: ' –'
+      replace: '&nbsp;–'
+    }
+    {
+      find: '\\. \\. \\.'
+      replace: '.&nbsp;.&nbsp;.'
+    }
     # Arc
-    # - find: '<p class="colophon">(?=(\d|\s)+\(e)'
+    # - find: '<p class="colophon">(?=(\\d|\\s)+\\(e)'
     #   replace: '<p class="colophon isbn">'
   ]
