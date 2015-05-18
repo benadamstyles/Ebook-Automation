@@ -62,18 +62,18 @@ function insertBefore(doc, locator, str) {
 }
 
 function edit(doc) {
-  return insertAfter(doc, '</spine>',
-    '\n' +
-    '\t<guide>\n' +
-    '\t\t<reference href="Text/' + metadata.toc_file + '#' + metadata
-    .toc_id +
-    '" title="Table of Contents" type="toc" />\n' +
-    '\t\t<reference href="Images/cover.jpg" type="cover" />\n' +
-    '\t\t<reference href="Text/' + metadata.start_reading_file +
-    '#' + (metadata.start_reading_id || 'full-title') +
-    '" title="Start Reading" type="text" />\n' +
-    '\t</guide>'
-  );
+  var guide = '\n' +
+              '\t<guide>\n' +
+              '\t\t<reference href="Text/' + metadata.toc_file + '#' + metadata
+              .toc_id +
+              '" title="Table of Contents" type="toc" />\n' +
+              '\t\t<reference href="Images/cover.jpg" type="cover" />\n' +
+              '\t\t<reference href="Text/' + metadata.start_reading_file +
+              '#' + (metadata.start_reading_id || 'full-title') +
+              '" title="Start Reading" type="text" />\n' +
+              '\t</guide>';
+  if (~doc.indexOf('<guide />')) return doc.replace('<guide />', guide);
+  else return insertAfter(doc, '</spine>', guide);
 }
 
 fs.createReadStream(srcFilePath)
