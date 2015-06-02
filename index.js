@@ -129,6 +129,8 @@ var edit = {
       (metadata.Subtitle ? (': ' + metadata.Subtitle) : '') +
       "</dc:title>";
 
+    if (!csv) return doc;
+
     if (doc.includes('<dc:title />')) {
       return doc.replace('<dc:title />', newTitle);
     } else if (doc.includes("<dc:title></dc:title>")) {
@@ -143,17 +145,16 @@ var edit = {
     var newISBN = '<dc:identifier xmlns:opf="http://www.idpf.org/2007/opf" opf:scheme="ISBN">' +
       metadata['eBook ISBN'] +
       '</dc:identifier>';
-    if (!metadata['eBook ISBN']) {
-      return doc;
-    }
-    if (!doc.includes(newISBN)) {
-      return insertBefore(doc, '</metadata>', '\t' + newISBN + '\n\t');
-    } else {
-      return doc;
-    }
+
+    if (!metadata['eBook ISBN']) return doc;
+    if (!doc.includes(newISBN)) return insertBefore(doc, '</metadata>', '\t' + newISBN + '\n\t');
+    else return doc;
   },
   opf_Author: function(doc) {
-    var newAuthor = '<dc:creator xmlns:opf="http://www.idpf.org/2007/opf" opf:file-as="' +
+    var newAuthor;
+    if (!csv) return doc;
+
+    newAuthor = '<dc:creator xmlns:opf="http://www.idpf.org/2007/opf" opf:file-as="' +
     swapNames(metadata['Author (First, Last)']) +
     '" opf:role="aut">' +
     metadata['Author (First, Last)'] + '</dc:creator>';
@@ -175,6 +176,9 @@ var edit = {
         return str + ' (First, Last)';
       }),
       res = doc;
+
+    if (!csv) return doc;
+
     for (var i = 0; i < verboseTypes.length; i++) {
       if (metadata[verboseTypes[i]]) {
         res = insertBefore(res, '</metadata>',
@@ -191,7 +195,8 @@ var edit = {
   opf_Regexes: function(doc) {
     if (metadata.regexes && metadata.regexes.opf &&
       metadata.regexes.opf.length) {
-      //
+      // TODO
+      return doc;
     } else {
       return doc;
     }
