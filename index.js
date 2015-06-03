@@ -21,6 +21,8 @@ var log = console.log,
   // rf = require('rimraf'),
   glob = require('glob');
 
+_.extend(_, require("underscore"));
+
 var nodeArgs = process.argv.slice(2);
 
 var csv = glob.sync('*.csv')[0],
