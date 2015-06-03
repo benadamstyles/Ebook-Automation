@@ -21,7 +21,7 @@ var log = console.log,
   // rf = require('rimraf'),
   glob = require('glob');
 
-_.extend(_, require("underscore"));
+_.extend(_, require("underscore")); // Fixing underscore-contrib out-of-date dependency
 
 var nodeArgs = process.argv.slice(2);
 
